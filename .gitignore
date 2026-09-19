@@ -1,0 +1,7 @@
+
+# Emacs Lisp
+*.elc
+/.eldev/
+/dist/
+*~
+/evmc-autoloads.el

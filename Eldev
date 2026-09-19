@@ -1,0 +1,25 @@
+; -*- mode: emacs-lisp; lexical-binding: t -*-
+
+(eldev-use-package-archive 'gnu-elpa)
+(eldev-use-package-archive 'melpa)
+
+;; Generate `evmc-autoloads.el' on build
+(eldev-use-plugin 'autoloads)
+
+(setf eldev-project-main-file "evmc.el")
+
+;; A byte-compile warning in a package that hooks `post-command-hook' is almost
+;; always a real bug, so refuse to let one slide and fail the build on any
+;; byte-compile warning.
+;;
+;; Errors signalled inside `post-command-hook' cause Emacs to quietly remove the
+;; offending function from the hook, so a typo'd variable or function name does
+;; not announce itself, and then multiple cursors simply stops working, with no
+;; stack-trace. The compiler catches most of those ("reference to free
+;; variable", "not known to be defined") long before they can reach the hook.
+;; Warnings that are merely cosmetic are held to the same standard only because
+;; tolerated noise is what lets the real ones pass unnoticed.
+(setf eldev-build-treat-warnings-as-errors t)
+
+;; `doc' is checkdoc, `package' is package-lint.
+(setf eldev-lint-default '(doc package))
