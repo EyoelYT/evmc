@@ -17,6 +17,7 @@
 
 (require 'evil)
 (require 'evmc-common)
+(require 'evmc-cursor)
 
 (defvar evmc-command-map (make-sparse-keymap)
   "Keymap of cursor-creation commands.
@@ -39,10 +40,10 @@ every fake cursor in the buffer."
   :lighter " evmc"
   :keymap evmc-mode-map
   :group 'evmc
-  ;; The replay driver's `post-command-hook' entry is installed here
-  ;; once `evmc-command' exists; teardown must also delete every cursor
-  ;; overlay.
+  ;; The replay driver's pre/post-command hooks can be installed here
+  ;; once `evmc-command' exists.
   (unless evmc-mode
+    (evmc-delete-all-cursors)
     (setq evmc-frozen nil)))
 
 (provide 'evmc)
