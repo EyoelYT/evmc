@@ -1,0 +1,20 @@
+
+* evmc-cursor
+
+- [v] evmc--overlay-priority = overlay priority
+- [s] evmc--cursor-point (cursor) = buffer pos of cursor
+- [f] evmc--make-cursor-overlay (pos) = create an unrendered overlay
+- [f] evmc--cursor-create (pos) = create cursor struct via the constructor
+- [f] evmc--cursor-delete (cursor) = delete cursor overlay & detach marker
+- [s] evmc--coverable-p (pos) = check if character can easily be drawn over
+- [f] evmc--render-cursor (cursor) = render the cursor
+- [f] evmc--render-region (cursor) = render the cursor's region
+- [f] evmc--unrender-cursor (cursor) = unrender the cursor and its region
+- [f] evmc--render-all = iterate all cursors and either unreder or render them and their regions
+- [f] evmc--cursor-at (pos) = return the fake cursor at pos
+- [f] evmc--prune-cursors = drop cursors whose overlay doesn't exist in curr buffer
+- [f] evmc--sort-cursors = sort cursors by ascending buffer position
+- [f] evmc--dedup-cursors = delete cursors that share a point with another cursor
+- [f] evmc--normalize-cursors = prune -> sort -> dedup -> render-all
+- [f] evmc--cursors-create-at (positions) = create mass cursors at positions, then normalize
+- [f] evmc-delete-all-cursors = delete every fake cursor in curr buffer
