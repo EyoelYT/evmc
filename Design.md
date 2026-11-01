@@ -5,18 +5,20 @@ without reading the reason is not.
 
 ## Decision log
 
-|# |Decision                                                                               |Key reason                                                                                                            |
-|--|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-|1 |Cursor is a mutable `cl-defstruct`; position lives in its display overlay              |Self-adjusting position, compile-checked field names, explicit mutation                                               |
-|2 |Overlay lives exactly as long as the cursor; pause clears display properties only      |A cursor without an overlay has no position; stashing one elsewhere reintroduces staleness                            |
-|3 |Render hybrid: cover the character mid-line, `after-string " "` at EOL/empty/EOB       |Mid-line `after-string` shifts the rest of the line one column per cursor                                             |
-|4 |`overlay-start` is authoritative; `overlay-end` is display-only, recomputed each render|Deleting the covered character collapses the overlay; the cursor must survive its own edit                            |
-|5 |`make-overlay` with both advance flags nil; position written explicitly post-replay    |Mixed flags let start outrun end on zero-length (EOL) overlays                                                        |
-|6 |Replay forward, ascending position; real cursor's point/mark held in markers           |The real cursor already ran first, so order can only buy predictability — and the real point goes stale like any other|
-|7 |Post-batch pipeline: prune → sort → dedup → render; list never mutated mid-batch       |Motions let cursors overtake each other, so the sort invariant must be re-established, not maintained                 |
-|8 |Dedup keeps the first in ascending order; the real cursor always wins                  |Stacked cursors double every edit forever; merging two selections has no correct answer                               |
-|9 |One undo step per batch, pointer captured in `pre-command-hook`                        |The real cursor's edit is already on the undo list before `post-command-hook` runs                                    |
-|10|`evmc-cursor-limit` enforced at creation only, atomically                              |Refusing at replay leaves visible cursors that silently do nothing                                                    |
+|# |Decision                                                                                                         |Key reason                                                                                                            |
+|--|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+|1 |Cursor is a mutable `cl-defstruct`; position lives in its display overlay                                        |Self-adjusting position, compile-checked field names, explicit mutation                                               |
+|2 |Overlay lives exactly as long as the cursor; pause clears display properties only                                |A cursor without an overlay has no position; stashing one elsewhere reintroduces staleness                            |
+|3 |Render hybrid: cover the character mid-line, `after-string " "` at EOL/empty/EOB                                 |Mid-line `after-string` shifts the rest of the line one column per cursor                                             |
+|4 |`overlay-start` is authoritative; `overlay-end` is display-only, recomputed each render                          |Deleting the covered character collapses the overlay; the cursor must survive its own edit                            |
+|5 |`make-overlay` with both advance flags nil; position written explicitly post-replay                              |Mixed flags let start outrun end on zero-length (EOL) overlays                                                        |
+|6 |Replay forward, ascending position; real cursor's point/mark held in markers                                     |The real cursor already ran first, so order can only buy predictability — and the real point goes stale like any other|
+|7 |Post-batch pipeline: prune → sort → dedup → render; list never mutated mid-batch                                 |Motions let cursors overtake each other, so the sort invariant must be re-established, not maintained                 |
+|8 |Dedup keeps the first in ascending order; the real cursor always wins                                            |Stacked cursors double every edit forever; merging two selections has no correct answer                               |
+|9 |One undo step per batch, pointer captured in `pre-command-hook`                                                  |The real cursor's edit is already on the undo list before `post-command-hook` runs                                    |
+|10|`evmc-cursor-limit` enforced at creation only, atomically                                                        |Refusing at replay leaves visible cursors that silently do nothing                                                    |
+|11|Per-cursor state is `let`-bound around each replay; only point, mark and Evil state are saved by hand, in markers|`let` restores even when a cursor errors, so a failing cursor cannot leak its state into the real one                 |
+|12|A slot exists only for state the real cursor's turn would change or consume first; Evil state is not a slot      |Evil state is one value per buffer; a per-cursor copy goes stale on the first state change                            |
 
 ## 8. Which commands get replayed
 

@@ -24,13 +24,15 @@ would otherwise hide cursors on the current line.")
 The cursor's position is not a slot, it is the `overlay''s start, so
 that it self-adjusts when other cursors edit the buffer.  The OVERLAY
 lives exactly as long as the cursor.  Pausing clears its display
-properties but never deletes it."
+properties but never deletes it.
+
+A slot should exist only for state that the real cursor's turn would
+change or consume before the fake cursors get theirs."
   overlay                 ; position of record, and the drawn cursor
   region-overlay          ; selection display, or nil
   mark                    ; marker or nil, this is never an integer
   mark-active
   last-command            ; per-cursor, gives repeat detection and goal column
-  evil-state
   temporary-goal-column   ; previous command's intent, this is not derivable
   register                ; `evil-this-register', the "x prefix
   kill-ring
@@ -61,7 +63,6 @@ The caller is responsible for adding it to `evmc-cursor-list'."
              (copy-marker m)))
    :mark-active mark-active
    :last-command last-command
-   :evil-state evil-state
    :temporary-goal-column temporary-goal-column
    :register evil-this-register
    ;; The following is shared with the globals on purpose
@@ -117,7 +118,7 @@ one."
   (let* ((pos (evmc--cursor-point cursor))
          (mark (evmc-cursor-mark cursor))
          (mark-pos (and (markerp mark) (marker-position mark)))
-         (visual (eq (evmc-cursor-evil-state cursor) 'visual))
+         (visual (eq evil-state 'visual))
          (active (or (evmc-cursor-mark-active cursor) visual))
          (rov (evmc-cursor-region-overlay cursor)))
     (if (and pos mark-pos active)
